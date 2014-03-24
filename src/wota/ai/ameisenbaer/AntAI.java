@@ -14,22 +14,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class AntAI extends wota.gameobjects.AntAI {
-	private final List<Behavior> behaviors;
+	private List<Behavior> behaviors = null;
 	private final GameMap map;
 
 	public AntAI() {
-		behaviors = Arrays.<Behavior>asList(
-				// If we attack while carrying, the sugar is dropped
-				new OnlyIfNotCarryingBehavior(new AttackWeakestEnemyBehavior()),
-				// Get the sugar home, if we have any
-				new OnlyIfCarryingBehavior(new ReturnHomeBehavior()),
-				new GatherSugarBehavior(),
-				new MoveInDirectionBehavior(SeededRandomizer.getInt(360))
-				);
-		// Reverse the list since so that earlier behaviors in the above
-		// list take precedence over later ones.
-		Collections.reverse(behaviors);
-
 		final AntAI self = this;
 		map = new GameMap(new GameMap.InViewInterface() {
 			@Override
@@ -39,8 +27,45 @@ public class AntAI extends wota.gameobjects.AntAI {
 		});
 	}
 
+	private void pickBehavior() {
+		switch (self.caste) {
+			default:
+			case Gatherer:
+				behaviors = Arrays.<Behavior>asList(
+						// If we attack while carrying, the sugar is dropped
+						new OnlyIfNotCarryingBehavior(new AttackWeakestEnemyBehavior()),
+						// Get the sugar home, if we have any
+						new OnlyIfCarryingBehavior(new ReturnHomeBehavior()),
+						// Get us some sugar to bring home
+						new GatherSugarBehavior(),
+						// As fall back, go into a random direction
+						new MoveInDirectionBehavior(SeededRandomizer.getInt(360))
+						);
+				break;
+			case Scout:
+				behaviors = Arrays.<Behavior>asList(
+						new AttackWeakestEnemyBehavior(),
+						new MoveInDirectionBehavior(SeededRandomizer.getInt(360))
+						);
+				break;
+			case Soldier:
+				behaviors = Arrays.<Behavior>asList(
+						new AttackWeakestEnemyBehavior(),
+						new MoveInDirectionBehavior(SeededRandomizer.getInt(360))
+						);
+				break;
+		}
+		// Reverse the list since so that earlier behaviors in the above
+		// list take precedence over later ones.
+		Collections.reverse(behaviors);
+	}
+
 	@Override
 	public void tick() throws Exception {
+		// Grml, this can't be done in constructor :-(
+		if (behaviors == null)
+			pickBehavior();
+
 		List<Ant> friends = Collections.unmodifiableList(visibleFriends());
 		List<Ant> enemies = Collections.unmodifiableList(visibleEnemies());
 		List<Message> messages = new ArrayList<Message>(audibleAntMessages);
