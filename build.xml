@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<project name="wota" default="jar" basedir=".">
+	<path id="project.class.path">
+		<pathelement location="lwjgl/jar/lwjgl.jar" />
+		<pathelement location="classes" />
+	</path>
+
+	<path id="test.class.path">
+	</path>
+
+	<target name="javac" description="Compile java source to bytecode">
+		<mkdir dir="classes"/>
+		<javac includes="**" encoding="utf-8"
+				destdir="classes" source="1.7" target="1.7"
+				debug="true" debuglevel="lines,vars,source"
+				includeantruntime="false">
+			<src path="src" />
+			<classpath refid="project.class.path"/>
+			<compilerarg value="-Xlint:all"/>
+		</javac>
+	</target>
+
+	<target name="clean" description="Cleans this project">
+		<delete dir="classes" failonerror="false" />
+		<delete file="wota.jar" failonerror="false" />
+	</target>
+
+	<target name="jar" depends="javac"
+		description="Build a jar file containing all the needed stuff to run the tool.">
+		<jar destfile="wota.jar">
+			<fileset dir="classes/" />
+			<zipfileset includes="**/*.class" src="lwjgl/jar/lwjgl.jar" />
+			<manifest>
+				<attribute name="Main-Class" value="wota.Wota" />
+			</manifest>
+		</jar>
+	</target>
+	<import file="build.local.xml" optional="true"/>
+</project>
