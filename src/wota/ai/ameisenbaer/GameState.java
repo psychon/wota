@@ -45,6 +45,31 @@ public class GameState {
 		return weakest;
 	}
 
+	public static Ant getClosestAnt(List<Ant> ants, Vector position) {
+		Ant result = null;
+		double distance = Double.MAX_VALUE;
+		for (Ant ant : ants) {
+			double dist = Vector.subtract(ant.getPosition(), position).length();
+			if (dist <= distance) {
+				result = ant;
+				distance = dist;
+			}
+		}
+		return result;
+	}
+
+	public static Ant getHealthiestAnt(List<Ant> ants) {
+		Ant result = null;
+		double health = 0;
+		for (Ant ant : ants) {
+			if (ant.health > health) {
+				result = ant;
+				health = ant.health;
+			}
+		}
+		return result;
+	}
+
 	public static List<Ant> getAntsInDistance(List<Ant> ants, Vector position, double distance) {
 		List<Ant> result = new LinkedList<>();
 		for (Ant ant : ants)

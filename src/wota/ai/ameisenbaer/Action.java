@@ -76,6 +76,10 @@ public class Action {
 		return new Action(Vector.fromPolar(state.parameters.SIZE_X/2, direction));
 	}
 
+	static public Action moveToAndAttack(Ant target, GameState state) {
+		return new Action(target, null, positionToDirection(target.getPosition(), state));
+	}
+
 	static public Vector positionToDirection(Vector vector, GameState state) {
 		return state.parameters.shortestDifferenceOnTorus(vector, state.self.getPosition());
 	}

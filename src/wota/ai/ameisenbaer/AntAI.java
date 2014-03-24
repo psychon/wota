@@ -34,6 +34,11 @@ public class AntAI extends wota.gameobjects.AntAI {
 				behaviors = Arrays.<Behavior>asList(
 						// If we attack while carrying, the sugar is dropped
 						new OnlyIfNotCarryingBehavior(new AttackWeakestEnemyBehavior()),
+						// Attack if we are twice as strong,
+						// flee if they are stronger
+						new OnlyIfNotCarryingBehavior(new AttackOrFleeBehavior(0.5, 1)),
+						// When carrying, always flee
+						new OnlyIfCarryingBehavior(new AttackOrFleeBehavior(0, 0.9)),
 						// Get the sugar home, if we have any
 						new OnlyIfCarryingBehavior(new ReturnHomeBehavior()),
 						// Get us some sugar to bring home
@@ -44,13 +49,18 @@ public class AntAI extends wota.gameobjects.AntAI {
 				break;
 			case Scout:
 				behaviors = Arrays.<Behavior>asList(
-						new AttackWeakestEnemyBehavior(),
+						// Never attack, always flee
+						new AttackOrFleeBehavior(0, 0.9),
 						new MoveInDirectionBehavior(SeededRandomizer.getInt(360))
 						);
 				break;
 			case Soldier:
 				behaviors = Arrays.<Behavior>asList(
 						new AttackWeakestEnemyBehavior(),
+						new FollowHealthierBehavior(),
+						// Attack if we are stronger,
+						// flee if they are twice as strong
+						new AttackOrFleeBehavior(1, 0.5),
 						new MoveInDirectionBehavior(SeededRandomizer.getInt(360))
 						);
 				break;
