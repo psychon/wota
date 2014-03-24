@@ -15,19 +15,20 @@ public class HillAI extends wota.gameobjects.HillAI {
 
 	@Override
 	public void tick() throws Exception {
-		tick++;
+		double myfood = self.food;
+		while (parameters.ANT_COST < myfood) {
+			myfood -= parameters.ANT_COST;
+			tick++;
 
-		switch (tick % 10) {
-			case 0:
-				createAnt(Caste.Scout, AntAI.class);
-				break;
-			case 8:
-			case 9:
-				createAnt(Caste.Soldier, AntAI.class);
-				break;
-			default:
-				createAnt(Caste.Gatherer, AntAI.class);
-				break;
+			switch (tick % 10) {
+				case 8:
+				case 9:
+					createAnt(Caste.Soldier, AntAI.class);
+					break;
+				default:
+					createAnt(Caste.Gatherer, AntAI.class);
+					break;
+			}
 		}
 
 		Action mapAction = map.tick(new ArrayList<Message>(audibleAntMessages), Collections.<Sugar>emptyList());
