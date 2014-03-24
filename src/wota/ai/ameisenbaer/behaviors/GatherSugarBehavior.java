@@ -11,26 +11,32 @@ public class GatherSugarBehavior implements Behavior {
 	private Sugar target = null;
 
 	private void pickTarget(GameState state) {
-		if (!state.gameMap.checkExists(except))
+		if (!state.gameMap.checkExists(except) || state.self.sugarCarry != 0)
 			except = null;
+		if (!state.gameMap.checkExists(target))
+			target = null;
 
+		// If we have a target, check if it's too crowded and pick
+		// another one if needed.
 		if (target != null && state.gameMap.checkExists(target)) {
 			if (except != null)
 				// We already skipped one, let's not get into a
 				// loop by also skipping another one
 				return;
 
+			// Check if our target is visible
 			boolean visible = false;
 			for (Sugar sugar : state.visibleSugar)
 				if (sugar.hasSameOriginal(target)) {
 					visible = true;
 					break;
 				}
+
+			// Don't re-pick if the target isn't overly crowded
 			if (!visible || state.visibleFriends.size() <= 5)
-				// Stay with the target we already have
 				return;
 
-			// Too many competing for this source
+			// Too much competition for this source
 			except = target;
 		}
 
@@ -38,10 +44,6 @@ public class GatherSugarBehavior implements Behavior {
 	}
 
 	public Action tick(GameState state) {
-		if (state.self.sugarCarry != 0) {
-			except = null;
-		}
-
 		pickTarget(state);
 
 		if (target == null)
