@@ -38,7 +38,7 @@ public class AntAI extends wota.gameobjects.AntAI {
 						// flee if they are stronger
 						new OnlyIfNotCarryingBehavior(new AttackOrFleeBehavior(0.5, 1)),
 						// When carrying, always flee
-						new OnlyIfCarryingBehavior(new AttackOrFleeBehavior(0, 0.9)),
+						new OnlyIfCarryingBehavior(new AttackOrFleeBehavior(0, 0.4)),
 						// Get the sugar home, if we have any
 						new OnlyIfCarryingBehavior(new ReturnHomeBehavior()),
 						// Get us some sugar to bring home

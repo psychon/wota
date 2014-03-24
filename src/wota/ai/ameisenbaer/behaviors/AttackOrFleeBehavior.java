@@ -17,7 +17,9 @@ public class AttackOrFleeBehavior implements Behavior {
 	}
 
 	private Action attack(GameState state) {
-		Ant target = GameState.getWeakestAnt(state.visibleEnemies);
+		Ant target = GameState.getCarryingAnt(state.visibleEnemies);
+		if (target == null)
+			target = GameState.getWeakestAnt(state.visibleEnemies);
 		if (target == null)
 			return null;
 		return Action.moveToAndAttack(target, state);

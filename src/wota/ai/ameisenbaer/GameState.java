@@ -34,6 +34,14 @@ public class GameState {
 		this.gameMap = map;
 	}
 
+	public static Ant getCarryingAnt(List<Ant> ants) {
+		for (Ant ant : ants)
+			if (ant.sugarCarry > 0) {
+				return ant;
+			}
+		return null;
+	}
+
 	public static Ant getWeakestAnt(List<Ant> ants) {
 		Ant weakest = null;
 		double health = Double.MAX_VALUE;
