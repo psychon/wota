@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <project name="wota" default="jar" basedir=".">
 	<path id="project.class.path">
-		<pathelement location="lwjgl/jar/lwjgl.jar" />
+		<pathelement location="/usr/share/java/lwjgl.jar" />
 		<pathelement location="classes" />
 	</path>
 
@@ -29,7 +29,7 @@
 		description="Build a jar file containing all the needed stuff to run the tool.">
 		<jar destfile="wota.jar">
 			<fileset dir="classes/" />
-			<zipfileset includes="**/*.class" src="lwjgl/jar/lwjgl.jar" />
+			<zipfileset includes="**/*.class" src="/usr/share/java/lwjgl.jar" />
 			<manifest>
 				<attribute name="Main-Class" value="wota.Wota" />
 			</manifest>
