@@ -17,7 +17,10 @@ public class GameMap {
 
 	private final InViewInterface inView;
 
-	private static final int MAX_AGE = 10000;
+	// The assumption is that all ants quickly learn about depleted food
+	// sources and thus don't have to remember them for as long
+	private static final int MAX_ALIVE_AGE = 10000;
+	private static final int MAX_DEAD_AGE = 500;
 
 	// Urgh. Ugly hack
 	public static interface InViewInterface {
@@ -26,11 +29,21 @@ public class GameMap {
 
 	private static class Seen<U extends Snapshot> {
 		public final U snapshot;
-		public int tick;
+		public final int tick;
+		public boolean alive;
 
 		public Seen(U snapshot, int tick) {
+			this(snapshot, tick, true);
+		}
+
+		public Seen(U snapshot, int tick, boolean alive) {
 			this.snapshot = snapshot;
 			this.tick = tick;
+			this.alive = alive;
+		}
+
+		public boolean hasSameOriginal(U other) {
+			return snapshot.hasSameOriginal(other);
 		}
 	}
 
@@ -59,23 +72,20 @@ public class GameMap {
 			return findEntry(snapshot) != null;
 		}
 
-		private void add(T snapshot, int tick) {
-			Iterator<Seen<T>> it = findEntry(snapshot);
+		private void add(Seen<T> seen) {
+			Iterator<Seen<T>> it = findEntry(seen.snapshot);
 			if (it != null)
 				it.remove();
 
 			// Add new one
-			snapshots.add(new Seen<T>(snapshot, tick));
+			snapshots.add(seen);
 		}
 
-		private void removeOld(int tick) {
+		private void removeOld(int aliveTick, int deadTick) {
 			Iterator<Seen<T>> it = snapshots.iterator();
 			while (it.hasNext()) {
 				Seen<T> t = it.next();
-				// FIXME: This hack is used so that we can
-				// broadcast "this source is depleted"-messages.
-				// That should be handled more intelligently.
-				if (t.tick != 0 && t.tick < tick)
+				if ((t.alive && t.tick < aliveTick) || (!t.alive && t.tick < deadTick))
 					it.remove();
 			}
 		}
@@ -84,10 +94,9 @@ public class GameMap {
 			Iterator<Seen<T>> it = snapshots.iterator();
 			while (it.hasNext()) {
 				Seen<T> t = it.next();
+				// If it should be in view, but isn't, it must be dead
 				if (inView.isInView(t.snapshot) && !visible.contains(t.snapshot)) {
-					// We should be seeing this Snapshot,
-					// but we don't. Thus, it must be gone.
-					t.tick = 0;
+					t.alive = false;
 				}
 			}
 		}
@@ -98,23 +107,27 @@ public class GameMap {
 	}
 
 	public Action tick(List<Message> messages, List<Sugar> visibleSugar) {
-		tick++;
-
 		for (Message message : messages)
 			if (message != null && message.contentSugar != null) {
-				if (message.content == Integer.MIN_VALUE)
-					// Mark as DEAD
-					sugarSeen.add(message.contentSugar, 0);
+				int content = message.content;
+				Sugar sugar = message.contentSugar;
+				// The sign specifies if the Sugar is alive or dead
+				if (message.content <= 0)
+					sugarSeen.add(new Seen<Sugar>(sugar, tick + content, false));
 				else if (!sugarSeen.isKnown(message.contentSugar))
-					sugarSeen.add(message.contentSugar, tick - message.content);
+					sugarSeen.add(new Seen<Sugar>(sugar, tick - content));
 			}
 
-		sugarSeen.removeOld(tick - MAX_AGE);
-		if (inView != null)
+		sugarSeen.removeOld(tick - MAX_ALIVE_AGE, tick - MAX_DEAD_AGE);
+		if (inView != null) {
 			sugarSeen.handleVisible(inView, visibleSugar);
+		}
 		for (Sugar sugar : visibleSugar)
-			sugarSeen.add(sugar, tick);
+			sugarSeen.add(new Seen<Sugar>(sugar, tick));
 
+		tick++;
+
+		// Pick a message to broadcast
 		if (sugarSeen.snapshots.isEmpty())
 			return null;
 
@@ -122,11 +135,9 @@ public class GameMap {
 		if (sugarSeenMessageIndex >= sugarSeen.snapshots.size())
 			sugarSeenMessageIndex = 0;
 		Seen<Sugar> sugar = sugarSeen.snapshots.get(sugarSeenMessageIndex);
-		int t = sugar.tick;
-		if (t != 0)
-			t = tick - t;
-		else
-			t = Integer.MIN_VALUE;
+		int t = tick - sugar.tick;
+		if (!sugar.alive)
+			t *= -1;
 		return new Action(t, sugar.snapshot);
 	}
 
@@ -135,7 +146,7 @@ public class GameMap {
 		double distance = Double.MAX_VALUE;
 		for (Seen<Sugar> sugar : sugarSeen) {
 			double dist = Vector.subtract(sugar.snapshot.getPosition(), position).length();
-			if (dist < distance && sugar.tick != 0 && !sugar.snapshot.hasSameOriginal(except)) {
+			if (dist < distance && sugar.alive && !sugar.snapshot.hasSameOriginal(except)) {
 				closest = sugar.snapshot;
 				distance = dist;
 			}
@@ -150,7 +161,7 @@ public class GameMap {
 
 	public boolean checkExists(Sugar sugar) {
 		for (Seen<Sugar> s : sugarSeen) {
-			if (s.tick != 0 && s.snapshot.hasSameOriginal(sugar))
+			if (s.alive && s.snapshot.hasSameOriginal(sugar))
 				return true;
 		}
 
