@@ -10,7 +10,8 @@ import wota.utility.Vector;
 public class FollowHealthierBehavior implements Behavior {
 	public Action tick(GameState state) {
 		Ant target = GameState.getHealthiestAnt(state.visibleFriends);
-		if (target == null || target.health <= state.self.health)
+		if (target == null || target.health < state.self.health ||
+				(target.health == state.self.health && target.id <= state.self.id))
 			return null;
 		return Action.moveToward(target.getPosition(), state);
 	}
