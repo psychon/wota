@@ -1,17 +1,18 @@
 package wota.ai.ameisenbaer;
 
 import wota.gamemaster.AIInformation;
+import wota.gameobjects.Ant;
 import wota.gameobjects.Caste;
+import wota.gameobjects.Hill;
 import wota.gameobjects.Message;
 import wota.gameobjects.Sugar;
-import wota.gameobjects.Ant;
 
 import java.util.ArrayList;
 import java.util.Collections;
 
 @AIInformation(creator = "Uli", name = "The Enemy of Ants")
 public class HillAI extends wota.gameobjects.HillAI {
-	private final GameMap map = new GameMap(null);
+	private final GameMap map = new GameMap();
 	private int tick = 0;
 
 	protected boolean haveVisibleEnemy() {
@@ -36,7 +37,9 @@ public class HillAI extends wota.gameobjects.HillAI {
 				createAnt(Caste.Gatherer, AntAI.class);
 		}
 
-		Action mapAction = map.tick(new ArrayList<Message>(audibleAntMessages), Collections.<Sugar>emptyList());
+		GameState state = new GameState(Collections.<Sugar>emptyList(), visibleAnts, Collections.<Ant>emptyList(),
+				Collections.<Ant>emptyList(), Collections.<Hill>emptyList(), new ArrayList<Message>(audibleAntMessages), parameters, self, map);
+		Action mapAction = map.tick(state);
 		if (mapAction != null && mapAction.messageSnapshot != null)
 			talk(mapAction.messageContent, mapAction.messageSnapshot);
 	}

@@ -1,9 +1,11 @@
 package wota.ai.ameisenbaer;
 
 import wota.gameobjects.Ant;
+import wota.gameobjects.Caste;
 import wota.gameobjects.Hill;
 import wota.gameobjects.Message;
 import wota.gameobjects.Parameters;
+import wota.gameobjects.Snapshot;
 import wota.gameobjects.Sugar;
 import wota.utility.Vector;
 
@@ -19,10 +21,21 @@ public class GameState {
 	public final List<Message> audibleMessages;
 	public final Parameters parameters;
 	public final Ant self;
+	public final Hill selfHill;
 	public final GameMap gameMap;
 
 	public GameState(List<Sugar> sugar, List<Ant> ants, List<Ant> enemies, List<Ant> friends,
-			List<Hill> hills, List<Message> messages, Parameters parameters, Ant self, GameMap map) {
+			List<Hill> hills, List<Message> messages, Parameters parameters, Ant selfAnt, GameMap map) {
+		this(sugar, ants, enemies, friends, hills, messages, parameters, selfAnt, null, map);
+	}
+
+	public GameState(List<Sugar> sugar, List<Ant> ants, List<Ant> enemies, List<Ant> friends,
+			List<Hill> hills, List<Message> messages, Parameters parameters, Hill selfHill, GameMap map) {
+		this(sugar, ants, enemies, friends, hills, messages, parameters, null, selfHill, map);
+	}
+
+	public GameState(List<Sugar> sugar, List<Ant> ants, List<Ant> enemies, List<Ant> friends,
+			List<Hill> hills, List<Message> messages, Parameters parameters, Ant selfAnt, Hill selfHill, GameMap map) {
 		visibleSugar = sugar;
 		visibleAnts = ants;
 		visibleEnemies = enemies;
@@ -30,7 +43,8 @@ public class GameState {
 		visibleHills = hills;
 		audibleMessages = messages;
 		this.parameters = parameters;
-		this.self = self;
+		this.self = selfAnt;
+		this.selfHill = selfHill;
 		this.gameMap = map;
 	}
 
@@ -84,5 +98,11 @@ public class GameState {
 			if (Vector.subtract(ant.getPosition(), position).length() <= distance)
 				result.add(ant);
 		return result;
+	}
+
+	public boolean isInView(Snapshot snapshot) {
+		Snapshot s = self != null ? self : selfHill;
+		double SIGHT_RANGE = self != null ? self.caste.SIGHT_RANGE : Caste.Hill.SIGHT_RANGE;
+		return parameters.distance(snapshot.getPosition(), s.getPosition()) < SIGHT_RANGE;
 	}
 }

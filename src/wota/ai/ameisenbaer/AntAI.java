@@ -15,17 +15,7 @@ import java.util.Collections;
 
 public class AntAI extends wota.gameobjects.AntAI {
 	private List<Behavior> behaviors = null;
-	private final GameMap map;
-
-	public AntAI() {
-		final AntAI self = this;
-		map = new GameMap(new GameMap.InViewInterface() {
-			@Override
-			public boolean isInView(Snapshot target) {
-				return self.isInView(target);
-			}
-		});
-	}
+	private final GameMap map = new GameMap();
 
 	private void pickBehavior() {
 		switch (self.caste) {
@@ -83,11 +73,11 @@ public class AntAI extends wota.gameobjects.AntAI {
 		messages.add(audibleHillMessage);
 		messages = Collections.unmodifiableList(messages);
 
-		Action mapAction = map.tick(messages, visibleSugar);
+		GameState state = new GameState(visibleSugar, visibleAnts, enemies, friends, visibleHills, messages, parameters, self, map);
+
+		Action mapAction = map.tick(state);
 		if (mapAction != null && mapAction.messageSnapshot != null)
 			talk(mapAction.messageContent, mapAction.messageSnapshot);
-
-		GameState state = new GameState(visibleSugar, visibleAnts, enemies, friends, visibleHills, messages, parameters, self, map);
 
 		// Execute all behaviors
 		for (Behavior behavior : behaviors) {

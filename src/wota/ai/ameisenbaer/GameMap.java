@@ -18,17 +18,10 @@ public class GameMap {
 	private SnapshotList<Sugar> sugarSeen = new SnapshotList<>();
 	private Queue<Seen<? extends Snapshot>> broadcastList = null;
 
-	private final InViewInterface inView;
-
 	// The assumption is that all ants quickly learn about depleted food
 	// sources and thus don't have to remember them for as long
 	private static final int MAX_ALIVE_AGE = 10000;
 	private static final int MAX_DEAD_AGE = 500;
-
-	// Urgh. Ugly hack
-	public static interface InViewInterface {
-		public boolean isInView(Snapshot target);
-	}
 
 	private static class Seen<U extends Snapshot> {
 		public final U snapshot;
@@ -120,24 +113,20 @@ public class GameMap {
 			}
 		}
 
-		private void handleVisible(InViewInterface inView, List<T> visible) {
+		private void handleVisible(GameState state, List<T> visible) {
 			Iterator<Seen<T>> it = snapshots.iterator();
 			while (it.hasNext()) {
 				Seen<T> t = it.next();
 				// If it should be in view, but isn't, it must be dead
-				if (inView.isInView(t.snapshot) && !visible.contains(t.snapshot)) {
+				if (state.isInView(t.snapshot) && !visible.contains(t.snapshot)) {
 					t.alive = false;
 				}
 			}
 		}
 	}
 
-	public GameMap(InViewInterface inView) {
-		this.inView = inView;
-	}
-
-	private void updateState(List<Message> messages, List<Sugar> visibleSugar) {
-		for (Message message : messages)
+	private void updateState(GameState state) {
+		for (Message message : state.audibleMessages)
 			if (message != null && message.contentSugar != null) {
 				Seen<Sugar> seen = sugarSeen.getEntry(message.contentSugar);
 				if (seen != null)
@@ -147,10 +136,8 @@ public class GameMap {
 			}
 
 		sugarSeen.removeOld(ticks - MAX_ALIVE_AGE, ticks - MAX_DEAD_AGE);
-		if (inView != null) {
-			sugarSeen.handleVisible(inView, visibleSugar);
-		}
-		for (Sugar sugar : visibleSugar)
+		sugarSeen.handleVisible(state, state.visibleSugar);
+		for (Sugar sugar : state.visibleSugar)
 			sugarSeen.add(new Seen<Sugar>(sugar, ticks));
 	}
 
@@ -164,8 +151,8 @@ public class GameMap {
 		return broadcastList.poll().getAction(ticks);
 	}
 
-	public Action tick(List<Message> messages, List<Sugar> visibleSugar) {
-		updateState(messages, visibleSugar);
+	public Action tick(GameState state) {
+		updateState(state);
 		ticks++;
 		return getAction();
 	}
