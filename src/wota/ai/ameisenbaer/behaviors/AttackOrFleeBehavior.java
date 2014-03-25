@@ -37,14 +37,16 @@ public class AttackOrFleeBehavior implements Behavior {
 		double friendAttack = state.self.caste.ATTACK;
 		for (Ant ant : state.visibleFriends) {
 			friendHealth += ant.health;
-			friendAttack += ant.caste.ATTACK;
+			if (ant.sugarCarry == 0)
+				friendAttack += ant.caste.ATTACK;
 		}
 
 		double enemyHealth = 0;
 		double enemyAttack = 0;
 		for (Ant ant : state.visibleEnemies) {
 			enemyHealth += ant.health;
-			enemyAttack += ant.caste.ATTACK;
+			if (ant.sugarCarry == 0)
+				enemyAttack += ant.caste.ATTACK;
 		}
 
 		if (friendHealth * attackFactor > enemyHealth && friendAttack * attackFactor > enemyAttack)
