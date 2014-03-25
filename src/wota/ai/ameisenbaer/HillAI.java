@@ -37,7 +37,7 @@ public class HillAI extends wota.gameobjects.HillAI {
 				createAnt(Caste.Gatherer, AntAI.class);
 		}
 
-		GameState state = new GameState(Collections.<Sugar>emptyList(), visibleAnts, Collections.<Ant>emptyList(),
+		GameState state = new GameState(Collections.<Sugar>emptyList(), Collections.<Ant>emptyList(), Collections.<Ant>emptyList(),
 				Collections.<Ant>emptyList(), Collections.<Hill>emptyList(), new ArrayList<Message>(audibleAntMessages), parameters, self, map);
 		Action mapAction = map.tick(state);
 		if (mapAction != null && mapAction.messageSnapshot != null)

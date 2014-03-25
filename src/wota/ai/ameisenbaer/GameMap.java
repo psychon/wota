@@ -6,10 +6,11 @@ import wota.gameobjects.Snapshot;
 import wota.gameobjects.Sugar;
 import wota.utility.Vector;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.ArrayList;
-import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Queue;
 
@@ -113,7 +114,7 @@ public class GameMap {
 			}
 		}
 
-		private void handleVisible(GameState state, List<T> visible) {
+		private void handleVisible(GameState state, Collection<T> visible) {
 			Iterator<Seen<T>> it = snapshots.iterator();
 			while (it.hasNext()) {
 				Seen<T> t = it.next();

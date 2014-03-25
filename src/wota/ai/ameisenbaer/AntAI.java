@@ -4,14 +4,17 @@ import wota.gamemaster.AIInformation;
 import wota.gameobjects.Ant;
 import wota.gameobjects.Message;
 import wota.gameobjects.Snapshot;
+import wota.gameobjects.Sugar;
+import wota.gameobjects.Hill;
 import wota.utility.SeededRandomizer;
 
 import wota.ai.ameisenbaer.behaviors.*;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 public class AntAI extends wota.gameobjects.AntAI {
 	private List<Behavior> behaviors = null;
@@ -67,13 +70,16 @@ public class AntAI extends wota.gameobjects.AntAI {
 		if (behaviors == null)
 			pickBehavior();
 
-		List<Ant> friends = Collections.unmodifiableList(visibleFriends());
-		List<Ant> enemies = Collections.unmodifiableList(visibleEnemies());
-		List<Message> messages = new ArrayList<Message>(audibleAntMessages);
+		Collection<Sugar> sugar = new SnapshotSet<>(visibleSugar);
+		Collection<Ant> ants = new SnapshotSet<>(visibleAnts);
+		Collection<Ant> enemies = new SnapshotSet<>(visibleEnemies());
+		Collection<Ant> friends = new SnapshotSet<>(visibleFriends());
+		Collection<Hill> hills = new SnapshotSet<>(visibleHills);
+		Collection<Message> messages = new ArrayList<Message>(audibleAntMessages);
 		messages.add(audibleHillMessage);
-		messages = Collections.unmodifiableList(messages);
+		messages = Collections.unmodifiableCollection(messages);
 
-		GameState state = new GameState(visibleSugar, visibleAnts, enemies, friends, visibleHills, messages, parameters, self, map);
+		GameState state = new GameState(sugar, ants, enemies, friends, hills, messages, parameters, self, map);
 
 		Action mapAction = map.tick(state);
 		if (mapAction != null && mapAction.messageSnapshot != null)

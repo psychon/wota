@@ -9,33 +9,32 @@ import wota.gameobjects.Snapshot;
 import wota.gameobjects.Sugar;
 import wota.utility.Vector;
 
-import java.util.List;
-import java.util.LinkedList;
+import java.util.Collection;
 
 public class GameState {
-	public final List<Sugar> visibleSugar;
-	public final List<Ant> visibleAnts;
-	public final List<Ant> visibleEnemies;
-	public final List<Ant> visibleFriends;
-	public final List<Hill> visibleHills;
-	public final List<Message> audibleMessages;
+	public final Collection<Sugar> visibleSugar;
+	public final Collection<Ant> visibleAnts;
+	public final Collection<Ant> visibleEnemies;
+	public final Collection<Ant> visibleFriends;
+	public final Collection<Hill> visibleHills;
+	public final Collection<Message> audibleMessages;
 	public final Parameters parameters;
 	public final Ant self;
 	public final Hill selfHill;
 	public final GameMap gameMap;
 
-	public GameState(List<Sugar> sugar, List<Ant> ants, List<Ant> enemies, List<Ant> friends,
-			List<Hill> hills, List<Message> messages, Parameters parameters, Ant selfAnt, GameMap map) {
+	public GameState(Collection<Sugar> sugar, Collection<Ant> ants, Collection<Ant> enemies, Collection<Ant> friends,
+			Collection<Hill> hills, Collection<Message> messages, Parameters parameters, Ant selfAnt, GameMap map) {
 		this(sugar, ants, enemies, friends, hills, messages, parameters, selfAnt, null, map);
 	}
 
-	public GameState(List<Sugar> sugar, List<Ant> ants, List<Ant> enemies, List<Ant> friends,
-			List<Hill> hills, List<Message> messages, Parameters parameters, Hill selfHill, GameMap map) {
+	public GameState(Collection<Sugar> sugar, Collection<Ant> ants, Collection<Ant> enemies, Collection<Ant> friends,
+			Collection<Hill> hills, Collection<Message> messages, Parameters parameters, Hill selfHill, GameMap map) {
 		this(sugar, ants, enemies, friends, hills, messages, parameters, null, selfHill, map);
 	}
 
-	public GameState(List<Sugar> sugar, List<Ant> ants, List<Ant> enemies, List<Ant> friends,
-			List<Hill> hills, List<Message> messages, Parameters parameters, Ant selfAnt, Hill selfHill, GameMap map) {
+	public GameState(Collection<Sugar> sugar, Collection<Ant> ants, Collection<Ant> enemies, Collection<Ant> friends,
+			Collection<Hill> hills, Collection<Message> messages, Parameters parameters, Ant selfAnt, Hill selfHill, GameMap map) {
 		visibleSugar = sugar;
 		visibleAnts = ants;
 		visibleEnemies = enemies;
@@ -48,7 +47,7 @@ public class GameState {
 		this.gameMap = map;
 	}
 
-	public static Ant getCarryingAnt(List<Ant> ants) {
+	public static Ant getCarryingAnt(Collection<Ant> ants) {
 		for (Ant ant : ants)
 			if (ant.sugarCarry > 0) {
 				return ant;
@@ -56,7 +55,7 @@ public class GameState {
 		return null;
 	}
 
-	public static Ant getWeakestAnt(List<Ant> ants) {
+	public static Ant getWeakestAnt(Collection<Ant> ants) {
 		Ant weakest = null;
 		double health = Double.MAX_VALUE;
 		for (Ant ant : ants)
@@ -67,7 +66,7 @@ public class GameState {
 		return weakest;
 	}
 
-	public static Ant getClosestAnt(List<Ant> ants, Vector position) {
+	public static Ant getClosestAnt(Collection<Ant> ants, Vector position) {
 		Ant result = null;
 		double distance = Double.MAX_VALUE;
 		for (Ant ant : ants) {
@@ -80,7 +79,7 @@ public class GameState {
 		return result;
 	}
 
-	public static Ant getHealthiestAnt(List<Ant> ants) {
+	public static Ant getHealthiestAnt(Collection<Ant> ants) {
 		Ant result = null;
 		double health = 0;
 		for (Ant ant : ants) {
@@ -92,8 +91,8 @@ public class GameState {
 		return result;
 	}
 
-	public static List<Ant> getAntsInDistance(List<Ant> ants, Vector position, double distance) {
-		List<Ant> result = new LinkedList<>();
+	public static Collection<Ant> getAntsInDistance(Collection<Ant> ants, Vector position, double distance) {
+		Collection<Ant> result = new SnapshotSet<>();
 		for (Ant ant : ants)
 			if (Vector.subtract(ant.getPosition(), position).length() <= distance)
 				result.add(ant);
