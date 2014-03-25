@@ -7,121 +7,46 @@ import wota.gameobjects.Sugar;
 import wota.utility.Vector;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Deque;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 public class GameMap {
 	private int ticks = 0;
-	private SnapshotList<Sugar> sugarSeen = new SnapshotList<>();
-	private Queue<Seen<? extends Snapshot>> broadcastList = null;
+	private final Set<Sugar> sugarAlive = new SnapshotSet<>();
+	private final SortedMap<Integer, Set<Sugar>> sugarDead = new TreeMap<>();
+	private Deque<Action> broadcastList = null;
 
-	// The assumption is that all ants quickly learn about depleted food
-	// sources and thus don't have to remember them for as long
-	private static final int MAX_ALIVE_AGE = 10000;
-	private static final int MAX_DEAD_AGE = 500;
+	private static final int MAX_DEAD_AGE = 1000;
 
-	private static class Seen<U extends Snapshot> {
-		public final U snapshot;
-		public final int tick;
-		public boolean alive;
+	private void markDead(int ticks, Sugar sugar) {
+		if (!sugarAlive.remove(sugar))
+			// We didn't know about it, so we don't care
+			return;
 
-		public Seen(U snapshot, int tick) {
-			this(snapshot, tick, true);
+		// Add an entry to the "dead map"
+		Set<Sugar> set = sugarDead.get(ticks);
+		if (set == null) {
+			set = new SnapshotSet<>();
+			sugarDead.put(ticks, set);
 		}
+		set.add(sugar);
 
-		public Seen(U snapshot, int tick, boolean alive) {
-			this.snapshot = snapshot;
-			this.tick = tick;
-			this.alive = alive;
-		}
-
-		public boolean hasSameOriginal(U other) {
-			return snapshot.hasSameOriginal(other);
-		}
-
-		public Action getAction(int ticks) {
-			int t = ticks - this.tick;
-			if (!this.alive)
-				t *= -1;
-			return new Action(t, this.snapshot);
-		}
-
-		public void updateFromMessage(int content) {
-			if (content <= 0)
-				alive = false;
-		}
-
-		static Seen<Sugar> sugarSeenFromMessage(int ticks, int content, Sugar snapshot) {
-			if (content <= 0)
-				return new Seen<Sugar>(snapshot, ticks + content, false);
-			else
-				return new Seen<Sugar>(snapshot, ticks - content);
-		}
-	}
-
-	private static class SnapshotList<T extends Snapshot> implements Iterable<Seen<T>> {
-		public final List<Seen<T>> snapshots = new ArrayList<>();
-
-		@Override
-		public Iterator<Seen<T>> iterator() {
-			return snapshots.iterator();
-		}
-
-		private Iterator<Seen<T>> findEntry(T snapshot) {
-			Iterator<Seen<T>> it = snapshots.iterator();
+		// Fix up the message queue
+		if (broadcastList != null) {
+			Iterator<Action> it = broadcastList.iterator();
 			while (it.hasNext()) {
-				Seen<T> t = it.next();
-				if (!snapshot.hasSameOriginal(t.snapshot))
+				Action action = it.next();
+				if (!action.messageSnapshot.hasSameOriginal(sugar))
 					continue;
 
-				return it;
-			}
-			return null;
-		}
-
-		private Seen<T> getEntry(T snapshot) {
-			Iterator<Seen<T>> it = snapshots.iterator();
-			while (it.hasNext()) {
-				Seen<T> t = it.next();
-				if (!snapshot.hasSameOriginal(t.snapshot))
-					continue;
-
-				return t;
-			}
-			return null;
-		}
-
-		private void add(Seen<T> seen) {
-			// Remove old entry, if one exists
-			Iterator<Seen<T>> it = findEntry(seen.snapshot);
-			if (it != null)
 				it.remove();
 
-			// Add new one
-			snapshots.add(seen);
-		}
-
-		private void removeOld(int aliveTick, int deadTick) {
-			Iterator<Seen<T>> it = snapshots.iterator();
-			while (it.hasNext()) {
-				Seen<T> t = it.next();
-				if ((t.alive && t.tick < aliveTick) || (!t.alive && t.tick < deadTick))
-					it.remove();
-			}
-		}
-
-		private void handleVisible(GameState state, Collection<T> visible) {
-			Iterator<Seen<T>> it = snapshots.iterator();
-			while (it.hasNext()) {
-				Seen<T> t = it.next();
-				// If it should be in view, but isn't, it must be dead
-				if (state.isInView(t.snapshot) && !visible.contains(t.snapshot)) {
-					t.alive = false;
-				}
+				// Add new message in head position so that it gets broadcasted soon
+				broadcastList.addFirst(new Action(ticks, sugar));
+				break;
 			}
 		}
 	}
@@ -129,27 +54,45 @@ public class GameMap {
 	private void updateState(GameState state) {
 		for (Message message : state.audibleMessages)
 			if (message != null && message.contentSugar != null) {
-				Seen<Sugar> seen = sugarSeen.getEntry(message.contentSugar);
-				if (seen != null)
-					seen.updateFromMessage(message.content);
+				Sugar sugar = message.contentSugar;
+				if (message.content == 0)
+					sugarAlive.add(sugar);
 				else
-					sugarSeen.add(Seen.sugarSeenFromMessage(ticks, message.content, message.contentSugar));
+					markDead(ticks - message.content, sugar);
 			}
 
-		sugarSeen.removeOld(ticks - MAX_ALIVE_AGE, ticks - MAX_DEAD_AGE);
-		sugarSeen.handleVisible(state, state.visibleSugar);
-		for (Sugar sugar : state.visibleSugar)
-			sugarSeen.add(new Seen<Sugar>(sugar, ticks));
+		// Remove all dead entries older than MAX_DEAD_AGE
+		while (!sugarDead.isEmpty() && sugarDead.firstKey() < ticks - MAX_DEAD_AGE)
+			sugarDead.remove(sugarDead.firstKey());
+
+		// All snapshots which should be in view but aren't are dead
+		for (Sugar sugar : sugarAlive) {
+			if (state.isInView(sugar) && !state.visibleSugar.contains(sugar)) {
+				markDead(ticks, sugar);
+				// Ugly hack to avoid ConcurrentModificationExceptions
+				break;
+			}
+		}
+
+		// All snapshots which are in view are alive
+		sugarAlive.addAll(state.visibleSugar);
 	}
 
 	private Action getAction() {
 		if (broadcastList == null || broadcastList.isEmpty()) {
-			broadcastList = new ArrayDeque<Seen<? extends Snapshot>>(sugarSeen.snapshots);
+			broadcastList = new ArrayDeque<>();
+			for (Sugar sugar : sugarAlive)
+				broadcastList.addLast(new Action(0, sugar));
+			for (SortedMap.Entry<Integer, Set<Sugar>> entry : sugarDead.entrySet()) {
+				int content = ticks - entry.getKey();
+				for (Sugar sugar : entry.getValue())
+					broadcastList.addLast(new Action(content, sugar));
+			}
 		}
 		if (broadcastList == null || broadcastList.isEmpty())
 			return null;
 
-		return broadcastList.poll().getAction(ticks);
+		return broadcastList.removeFirst();
 	}
 
 	public Action tick(GameState state) {
@@ -161,10 +104,10 @@ public class GameMap {
 	public Sugar getClosestSugarExcept(Vector position, Sugar except) {
 		Sugar closest = null;
 		double distance = Double.MAX_VALUE;
-		for (Seen<Sugar> sugar : sugarSeen) {
-			double dist = Vector.subtract(sugar.snapshot.getPosition(), position).length();
-			if (dist < distance && sugar.alive && !sugar.snapshot.hasSameOriginal(except)) {
-				closest = sugar.snapshot;
+		for (Sugar sugar : sugarAlive) {
+			double dist = Vector.subtract(sugar.getPosition(), position).length();
+			if (dist < distance && !sugar.hasSameOriginal(except)) {
+				closest = sugar;
 				distance = dist;
 			}
 		}
@@ -177,11 +120,6 @@ public class GameMap {
 	}
 
 	public boolean checkExists(Sugar sugar) {
-		for (Seen<Sugar> s : sugarSeen) {
-			if (s.alive && s.snapshot.hasSameOriginal(sugar))
-				return true;
-		}
-
-		return false;
+		return sugarAlive.contains(sugar);
 	}
 }
