@@ -8,8 +8,13 @@ import wota.gameobjects.Ant;
 import wota.utility.Vector;
 
 public class AttackOrFleeBehavior implements Behavior {
+	static private final int FLEE_TICKS = 10;
+
 	private final double attackFactor;
 	private final double fleeFactor;
+
+	private int fleeTicks;
+	private Vector fleeDirection;
 
 	public AttackOrFleeBehavior(double attackFactor, double fleeFactor) {
 		this.attackFactor = attackFactor;
@@ -29,7 +34,10 @@ public class AttackOrFleeBehavior implements Behavior {
 		Ant attacker = GameState.getClosestAnt(state.visibleEnemies, state.self.getPosition());
 		if (attacker == null)
 			return null;
-		return new Action(Vector.subtract(state.self.getPosition(), attacker.getPosition()));
+
+		fleeTicks = FLEE_TICKS;
+		fleeDirection = Vector.subtract(state.self.getPosition(), attacker.getPosition());
+		return new Action(fleeDirection);
 	}
 
 	private boolean shouldNotFlee(GameState state, double enemyAttack) {
@@ -45,6 +53,11 @@ public class AttackOrFleeBehavior implements Behavior {
 	}
 
 	public Action tick(GameState state) {
+		if (fleeTicks > 0) {
+			fleeTicks--;
+			return new Action(fleeDirection);
+		}
+
 		double friendHealth = state.self.health;
 		double friendAttack = state.self.caste.ATTACK;
 		for (Ant ant : state.visibleFriends) {
