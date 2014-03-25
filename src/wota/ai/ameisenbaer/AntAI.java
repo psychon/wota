@@ -79,7 +79,8 @@ public class AntAI extends wota.gameobjects.AntAI {
 		messages.add(audibleHillMessage);
 		messages = Collections.unmodifiableCollection(messages);
 
-		GameState state = new GameState(sugar, ants, enemies, friends, hills, messages, parameters, self, map);
+		GameState state = new GameState(sugar, ants, enemies, friends, hills, messages, parameters,
+				self, map, vectorToHome());
 
 		Action mapAction = map.tick(state);
 		if (mapAction != null && mapAction.messageSnapshot != null)

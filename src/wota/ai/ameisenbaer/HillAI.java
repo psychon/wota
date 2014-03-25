@@ -6,6 +6,7 @@ import wota.gameobjects.Caste;
 import wota.gameobjects.Hill;
 import wota.gameobjects.Message;
 import wota.gameobjects.Sugar;
+import wota.utility.Vector;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,7 +39,8 @@ public class HillAI extends wota.gameobjects.HillAI {
 		}
 
 		GameState state = new GameState(Collections.<Sugar>emptyList(), Collections.<Ant>emptyList(), Collections.<Ant>emptyList(),
-				Collections.<Ant>emptyList(), Collections.<Hill>emptyList(), new ArrayList<Message>(audibleAntMessages), parameters, self, map);
+				Collections.<Ant>emptyList(), Collections.<Hill>emptyList(), new ArrayList<Message>(audibleAntMessages),
+				parameters, self, map, new Vector(0, 0));
 		Action mapAction = map.tick(state);
 		if (mapAction != null && mapAction.messageSnapshot != null)
 			talk(mapAction.messageContent, mapAction.messageSnapshot);

@@ -32,6 +32,18 @@ public class AttackOrFleeBehavior implements Behavior {
 		return new Action(Vector.subtract(state.self.getPosition(), attacker.getPosition()));
 	}
 
+	private boolean shouldNotFlee(GameState state, double enemyAttack) {
+		// The idea is: Don't flee if we are carrying sugar...
+		if (state.self.sugarCarry == 0 || enemyAttack == 0)
+			return false;
+
+		double roundsSurvive = state.self.health / enemyAttack;
+		double roundsToGo = state.vectorToHome.length() / state.self.caste.SPEED_WHILE_CARRYING_SUGAR;
+
+		// ...and we can get the sugar home before we die
+		return roundsToGo < roundsSurvive;
+	}
+
 	public Action tick(GameState state) {
 		double friendHealth = state.self.health;
 		double friendAttack = state.self.caste.ATTACK;
@@ -51,6 +63,9 @@ public class AttackOrFleeBehavior implements Behavior {
 
 		if (friendHealth * attackFactor > enemyHealth && friendAttack * attackFactor > enemyAttack)
 			return attack(state);
+
+		if (shouldNotFlee(state, enemyAttack))
+			return null;
 
 		if (friendHealth * fleeFactor < enemyHealth || friendAttack * fleeFactor < enemyAttack)
 			return flee(state);

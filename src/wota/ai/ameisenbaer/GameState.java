@@ -22,19 +22,23 @@ public class GameState {
 	public final Ant self;
 	public final Hill selfHill;
 	public final GameMap gameMap;
+	public final Vector vectorToHome;
 
 	public GameState(Collection<Sugar> sugar, Collection<Ant> ants, Collection<Ant> enemies, Collection<Ant> friends,
-			Collection<Hill> hills, Collection<Message> messages, Parameters parameters, Ant selfAnt, GameMap map) {
-		this(sugar, ants, enemies, friends, hills, messages, parameters, selfAnt, null, map);
+			Collection<Hill> hills, Collection<Message> messages, Parameters parameters, Ant selfAnt, GameMap map,
+			Vector vectorToHome) {
+		this(sugar, ants, enemies, friends, hills, messages, parameters, selfAnt, null, map, vectorToHome);
 	}
 
 	public GameState(Collection<Sugar> sugar, Collection<Ant> ants, Collection<Ant> enemies, Collection<Ant> friends,
-			Collection<Hill> hills, Collection<Message> messages, Parameters parameters, Hill selfHill, GameMap map) {
-		this(sugar, ants, enemies, friends, hills, messages, parameters, null, selfHill, map);
+			Collection<Hill> hills, Collection<Message> messages, Parameters parameters, Hill selfHill, GameMap map,
+			Vector vectorToHome) {
+		this(sugar, ants, enemies, friends, hills, messages, parameters, null, selfHill, map, vectorToHome);
 	}
 
 	public GameState(Collection<Sugar> sugar, Collection<Ant> ants, Collection<Ant> enemies, Collection<Ant> friends,
-			Collection<Hill> hills, Collection<Message> messages, Parameters parameters, Ant selfAnt, Hill selfHill, GameMap map) {
+			Collection<Hill> hills, Collection<Message> messages, Parameters parameters, Ant selfAnt, Hill selfHill,
+			GameMap map, Vector vectorToHome) {
 		visibleSugar = sugar;
 		visibleAnts = ants;
 		visibleEnemies = enemies;
@@ -45,6 +49,7 @@ public class GameState {
 		this.self = selfAnt;
 		this.selfHill = selfHill;
 		this.gameMap = map;
+		this.vectorToHome = vectorToHome;
 	}
 
 	public static Ant getCarryingAnt(Collection<Ant> ants) {
