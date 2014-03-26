@@ -34,6 +34,8 @@ public class AntAI extends wota.gameobjects.AntAI {
 						new OnlyIfCarryingBehavior(new AttackOrFleeBehavior(0, 0.4)),
 						// Get the sugar home, if we have any
 						new OnlyIfCarryingBehavior(new ReturnHomeBehavior()),
+						// Avoid splash damage
+						new OnlyIfNotCarryingBehavior(new AvoidCrowd(SeededRandomizer.getInt(360))),
 						// Get us some sugar to bring home
 						new GatherSugarBehavior(),
 						// As fall back, go into a random direction
@@ -44,6 +46,8 @@ public class AntAI extends wota.gameobjects.AntAI {
 				behaviors = Arrays.<Behavior>asList(
 						// Never attack, always flee
 						new AttackOrFleeBehavior(0, 0.9),
+						// Avoid splash damage
+						new AvoidCrowd(SeededRandomizer.getInt(360)),
 						new MoveInDirectionBehavior(SeededRandomizer.getInt(360))
 						);
 				break;
@@ -53,6 +57,8 @@ public class AntAI extends wota.gameobjects.AntAI {
 						// Attack if we are stronger,
 						// flee if they are twice as strong
 						new AttackOrFleeBehavior(1, 0.5),
+						// Avoid splash damage
+						new AvoidCrowd(SeededRandomizer.getInt(360)),
 						new FollowHealthierBehavior(),
 						new CampBehavior(4),
 						new MoveInDirectionBehavior(SeededRandomizer.getInt(360))
