@@ -10,6 +10,8 @@ import wota.utility.Vector;
 public class AttackOrFleeBehavior implements Behavior {
 	static private final int FLEE_TICKS = 10;
 	static private final int ATTACK_TICKS = 30;
+	static private final double CARRYING_FRIEND_FACTOR = 1;
+	static private final double CARRYING_ENEMY_FACTOR = 0.25;
 
 	private final double attackFactor;
 	private final double fleeFactor;
@@ -79,17 +81,21 @@ public class AttackOrFleeBehavior implements Behavior {
 		double friendHealth = state.self.health;
 		double friendAttack = state.self.caste.ATTACK;
 		for (Ant ant : state.visibleFriends) {
-			friendHealth += ant.health;
+			double factor = CARRYING_FRIEND_FACTOR;
 			if (ant.sugarCarry == 0)
-				friendAttack += ant.caste.ATTACK;
+				factor = 1;
+			friendHealth += factor * ant.health;
+			friendAttack += factor * ant.caste.ATTACK;
 		}
 
 		double enemyHealth = 0;
 		double enemyAttack = 0;
 		for (Ant ant : state.visibleEnemies) {
-			enemyHealth += ant.health;
+			double factor = CARRYING_ENEMY_FACTOR;
 			if (ant.sugarCarry == 0)
-				enemyAttack += ant.caste.ATTACK;
+				factor = 1;
+			enemyHealth += factor * ant.health;
+			enemyAttack += factor * ant.caste.ATTACK;
 		}
 
 		if (friendHealth * attackFactor > enemyHealth && friendAttack * attackFactor > enemyAttack)
