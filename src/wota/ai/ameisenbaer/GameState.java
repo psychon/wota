@@ -104,6 +104,14 @@ public class GameState {
 		return result;
 	}
 
+	public static Collection<Ant> getAntsWithCaste(Collection<Ant> ants, Caste caste) {
+		Collection<Ant> result = new SnapshotSet<>();
+		for (Ant ant : ants)
+			if (ant.caste.equals(caste))
+				result.add(ant);
+		return result;
+	}
+
 	public boolean isInView(Snapshot snapshot) {
 		Snapshot s = self != null ? self : selfHill;
 		double SIGHT_RANGE = self != null ? self.caste.SIGHT_RANGE : Caste.Hill.SIGHT_RANGE;

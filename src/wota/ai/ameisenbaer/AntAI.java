@@ -54,7 +54,7 @@ public class AntAI extends wota.gameobjects.AntAI {
 						// flee if they are twice as strong
 						new AttackOrFleeBehavior(1, 0.5),
 						new FollowHealthierBehavior(),
-						new CampInEnemyHillBehavior(),
+						new CampBehavior(4),
 						new MoveInDirectionBehavior(SeededRandomizer.getInt(360))
 						);
 				break;
