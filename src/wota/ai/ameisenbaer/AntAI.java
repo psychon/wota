@@ -21,6 +21,7 @@ public class AntAI extends wota.gameobjects.AntAI {
 	private final GameMap map = new GameMap();
 
 	private void pickBehavior() {
+		double direction = 360 * self.id / (parameters.STARTING_FOOD / parameters.ANT_COST);
 		switch (self.caste) {
 			default:
 			case Gatherer:
@@ -35,11 +36,11 @@ public class AntAI extends wota.gameobjects.AntAI {
 						// Get the sugar home, if we have any
 						new OnlyIfCarryingBehavior(new ReturnHomeBehavior()),
 						// Avoid splash damage
-						new OnlyIfNotCarryingBehavior(new AvoidCrowd(SeededRandomizer.getInt(360))),
+						new OnlyIfNotCarryingBehavior(new AvoidCrowd(direction)),
 						// Get us some sugar to bring home
 						new GatherSugarBehavior(),
 						// As fall back, go into a random direction
-						new MoveInDirectionBehavior(SeededRandomizer.getInt(360))
+						new MoveInDirectionBehavior(direction)
 						);
 				break;
 			case Scout:
@@ -47,8 +48,8 @@ public class AntAI extends wota.gameobjects.AntAI {
 						// Never attack, always flee
 						new AttackOrFleeBehavior(0, 0.9),
 						// Avoid splash damage
-						new AvoidCrowd(SeededRandomizer.getInt(360)),
-						new MoveInDirectionBehavior(SeededRandomizer.getInt(360))
+						new AvoidCrowd(direction),
+						new MoveInDirectionBehavior(direction)
 						);
 				break;
 			case Soldier:
@@ -58,10 +59,10 @@ public class AntAI extends wota.gameobjects.AntAI {
 						// flee if they are twice as strong
 						new AttackOrFleeBehavior(1, 0.5),
 						// Avoid splash damage
-						new AvoidCrowd(SeededRandomizer.getInt(360)),
+						new AvoidCrowd(direction),
 						new FollowHealthierBehavior(),
 						new CampBehavior(4),
-						new MoveInDirectionBehavior(SeededRandomizer.getInt(360))
+						new MoveInDirectionBehavior(direction)
 						);
 				break;
 		}

@@ -5,9 +5,9 @@ import wota.ai.ameisenbaer.Behavior;
 import wota.ai.ameisenbaer.GameState;
 
 public class MoveInDirectionBehavior implements Behavior {
-	private final int direction;
+	private final double direction;
 
-	public MoveInDirectionBehavior(int direction) {
+	public MoveInDirectionBehavior(double direction) {
 		this.direction = direction;
 	}
 
