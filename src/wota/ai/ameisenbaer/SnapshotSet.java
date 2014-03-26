@@ -8,7 +8,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 public class SnapshotSet<T extends Snapshot> extends AbstractSet<T> {
-	private Collection<T> data = new LinkedList<>();
+	private Collection<T> data = new LinkedList<T>();
 
 	public SnapshotSet() {
 	}

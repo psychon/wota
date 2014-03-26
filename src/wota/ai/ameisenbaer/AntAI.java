@@ -76,11 +76,11 @@ public class AntAI extends wota.gameobjects.AntAI {
 		if (behaviors == null)
 			pickBehavior();
 
-		Collection<Sugar> sugar = new SnapshotSet<>(visibleSugar);
-		Collection<Ant> ants = new SnapshotSet<>(visibleAnts);
-		Collection<Ant> enemies = new SnapshotSet<>(visibleEnemies());
-		Collection<Ant> friends = new SnapshotSet<>(visibleFriends());
-		Collection<Hill> hills = new SnapshotSet<>(visibleHills);
+		Collection<Sugar> sugar = new SnapshotSet<Sugar>(visibleSugar);
+		Collection<Ant> ants = new SnapshotSet<Ant>(visibleAnts);
+		Collection<Ant> enemies = new SnapshotSet<Ant>(visibleEnemies());
+		Collection<Ant> friends = new SnapshotSet<Ant>(visibleFriends());
+		Collection<Hill> hills = new SnapshotSet<Hill>(visibleHills);
 		Collection<Message> messages = new ArrayList<Message>(audibleAntMessages);
 		messages.add(audibleHillMessage);
 		messages = Collections.unmodifiableCollection(messages);

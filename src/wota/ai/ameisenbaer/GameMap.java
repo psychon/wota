@@ -15,8 +15,8 @@ import java.util.TreeMap;
 
 public class GameMap {
 	private int ticks = 0;
-	private final Set<Sugar> sugarAlive = new SnapshotSet<>();
-	private final SortedMap<Integer, Set<Sugar>> sugarDead = new TreeMap<>();
+	private final Set<Sugar> sugarAlive = new SnapshotSet<Sugar>();
+	private final SortedMap<Integer, Set<Sugar>> sugarDead = new TreeMap<Integer, Set<Sugar>>();
 	private Deque<Action> broadcastList = null;
 
 	private static final int MAX_DEAD_AGE = 1000;
@@ -29,7 +29,7 @@ public class GameMap {
 		// Add an entry to the "dead map"
 		Set<Sugar> set = sugarDead.get(ticks);
 		if (set == null) {
-			set = new SnapshotSet<>();
+			set = new SnapshotSet<Sugar>();
 			sugarDead.put(ticks, set);
 		}
 		set.add(sugar);
@@ -80,7 +80,7 @@ public class GameMap {
 
 	private Action getAction() {
 		if (broadcastList == null || broadcastList.isEmpty()) {
-			broadcastList = new ArrayDeque<>();
+			broadcastList = new ArrayDeque<Action>();
 			for (Sugar sugar : sugarAlive)
 				broadcastList.addLast(new Action(0, sugar));
 			for (SortedMap.Entry<Integer, Set<Sugar>> entry : sugarDead.entrySet()) {

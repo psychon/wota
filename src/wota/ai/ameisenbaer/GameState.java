@@ -103,7 +103,7 @@ public class GameState {
 	}
 
 	public static Collection<Ant> getAntsInDistance(Collection<Ant> ants, Vector position, double distance) {
-		Collection<Ant> result = new SnapshotSet<>();
+		Collection<Ant> result = new SnapshotSet<Ant>();
 		for (Ant ant : ants)
 			if (Vector.subtract(ant.getPosition(), position).length() <= distance)
 				result.add(ant);
@@ -111,7 +111,7 @@ public class GameState {
 	}
 
 	public static Collection<Ant> getAntsWithCaste(Collection<Ant> ants, Caste caste) {
-		Collection<Ant> result = new SnapshotSet<>();
+		Collection<Ant> result = new SnapshotSet<Ant>();
 		for (Ant ant : ants)
 			if (ant.caste.equals(caste))
 				result.add(ant);
