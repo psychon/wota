@@ -9,6 +9,7 @@ import wota.utility.Vector;
 
 public class AttackOrFleeBehavior implements Behavior {
 	static private final int FLEE_TICKS = 10;
+	static private final int ATTACK_TICKS = 30;
 
 	private final double attackFactor;
 	private final double fleeFactor;
@@ -16,17 +17,34 @@ public class AttackOrFleeBehavior implements Behavior {
 	private int fleeTicks;
 	private Vector fleeDirection;
 
+	private int attackTicks;
+	private Ant lastAttackTarget;
+
 	public AttackOrFleeBehavior(double attackFactor, double fleeFactor) {
 		this.attackFactor = attackFactor;
 		this.fleeFactor = fleeFactor;
 	}
 
 	private Action attack(GameState state) {
+		// dont endlessly follow an equally fast target
 		Ant target = GameState.getCarryingAnt(state.visibleEnemies);
 		if (target == null)
 			target = GameState.getWeakestAnt(state.visibleEnemies);
-		if (target == null)
+		if (target == null) {
+			lastAttackTarget = null;
 			return null;
+		}
+
+		// If we are following the same target for too many ticks and
+		// still aren't in attack range, give up
+		if (lastAttackTarget != null && lastAttackTarget.hasSameOriginal(target)) {
+			if (Vector.subtract(state.self.getPosition(), target.getPosition()).length() >= state.parameters.ATTACK_RANGE &&
+					(attackTicks == 0 || --attackTicks == 0))
+				return null;
+		} else {
+			lastAttackTarget = target;
+			attackTicks = ATTACK_TICKS;
+		}
 		return Action.moveToAndAttack(target, state);
 	}
 
