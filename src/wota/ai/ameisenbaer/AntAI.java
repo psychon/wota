@@ -47,6 +47,7 @@ public class AntAI extends wota.gameobjects.AntAI {
 				behaviors = Arrays.<Behavior>asList(
 						// Never attack, always flee
 						new AttackOrFleeBehavior(0, 0.9),
+						new PatrolBehavior(),
 						// Avoid splash damage
 						new AvoidCrowd(direction),
 						new MoveInDirectionBehavior(direction)
@@ -62,6 +63,7 @@ public class AntAI extends wota.gameobjects.AntAI {
 						new AvoidCrowd(direction),
 						new FollowHealthierBehavior(),
 						new CampBehavior(4),
+						new PatrolBehavior(),
 						new MoveInDirectionBehavior(direction)
 						);
 				break;

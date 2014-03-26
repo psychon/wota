@@ -4,6 +4,7 @@ import wota.gameobjects.Ant;
 import wota.gameobjects.Message;
 import wota.gameobjects.Snapshot;
 import wota.gameobjects.Sugar;
+import wota.utility.SeededRandomizer;
 import wota.utility.Vector;
 
 import java.util.ArrayDeque;
@@ -99,6 +100,17 @@ public class GameMap {
 		updateState(state);
 		ticks++;
 		return getAction();
+	}
+
+	public Sugar getRandomSugarSource() {
+		if (sugarAlive.isEmpty())
+			return null;
+
+		int idx = SeededRandomizer.getInt(sugarAlive.size());
+		for (Sugar sugar : sugarAlive)
+			if (idx-- == 0)
+				return sugar;
+		return null;
 	}
 
 	public Sugar getClosestSugarExcept(Vector position, Sugar except) {
