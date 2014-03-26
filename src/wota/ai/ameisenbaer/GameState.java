@@ -12,6 +12,8 @@ import wota.utility.Vector;
 import java.util.Collection;
 
 public class GameState {
+	private static final double CLOSE_DISTANCE_LIMIT = 1e-4;
+
 	public final Collection<Sugar> visibleSugar;
 	public final Collection<Ant> visibleAnts;
 	public final Collection<Ant> visibleEnemies;
@@ -79,6 +81,10 @@ public class GameState {
 			if (dist <= distance) {
 				result = ant;
 				distance = dist;
+				// If too many ants are standing on the same
+				// spot, this code could use too much time
+				if (distance < CLOSE_DISTANCE_LIMIT)
+					break;
 			}
 		}
 		return result;
