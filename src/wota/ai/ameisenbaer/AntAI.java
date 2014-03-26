@@ -45,11 +45,8 @@ public class AntAI extends wota.gameobjects.AntAI {
 				break;
 			case Scout:
 				behaviors = Arrays.<Behavior>asList(
-						// Never attack, always flee
-						new AttackOrFleeBehavior(0, 0.9),
+						// Scouts are fast enough so that they never need to flee
 						new PatrolBehavior(),
-						// Avoid splash damage
-						new AvoidCrowd(direction),
 						new MoveInDirectionBehavior(direction)
 						);
 				break;
