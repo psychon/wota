@@ -31,8 +31,10 @@ public class HillAI extends wota.gameobjects.HillAI {
 		for (int i = 0; i < ants; i++) {
 			tick++;
 
-			if (tick % 20 > 15 || (haveVisibleEnemy() && tick % 2 == 0))
+			if (tick % 22 > 16 || (haveVisibleEnemy() && tick % 2 == 0))
 				createAnt(Caste.Soldier, AntAI.class);
+			else if (tick % 22 > 15)
+				createAnt(Caste.Scout, AntAI.class);
 			else
 				createAnt(Caste.Gatherer, AntAI.class);
 		}
