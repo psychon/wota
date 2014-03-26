@@ -27,9 +27,8 @@ public class HillAI extends wota.gameobjects.HillAI {
 
 	@Override
 	public void tick() throws Exception {
-		double myfood = self.food;
-		while (parameters.ANT_COST <= myfood) {
-			myfood -= parameters.ANT_COST;
+		int ants = (int) (self.food / parameters.ANT_COST);
+		for (int i = 0; i < ants; i++) {
 			tick++;
 
 			if (tick % 20 > 15 || (haveVisibleEnemy() && tick % 2 == 0))
